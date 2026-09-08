@@ -36,7 +36,24 @@ pipeline {
 
         stage('Health Check') {
             steps {
-                sh 'curl -f http://127.0.0.1:4000/health'
+                sh '''
+                    echo "Waiting for backend to become healthy..."
+
+                    for i in {1..12}; do
+                        if curl -f http://127.0.0.1:4000/health; then
+                            echo "Backend is healthy!"
+                            exit 0
+                        fi
+
+                        echo "Backend not ready yet. Waiting 5 seconds..."
+                        sleep 5
+                    done
+
+                    echo "Backend health check failed."
+                    docker compose ps
+                    docker compose logs --tail=100 backend
+                    exit 1
+                '''
             }
         }
     }
