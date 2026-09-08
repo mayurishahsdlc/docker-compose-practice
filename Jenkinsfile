@@ -1,11 +1,15 @@
 pipeline {
     agent any
 
+    options {
+        skipDefaultCheckout(true)
+    }
+
     stages {
 
         stage('Checkout') {
             steps {
-                echo 'Checking out source code...'
+                echo 'Checking out staging source code...'
                 checkout scm
             }
         }
@@ -19,43 +23,44 @@ pipeline {
 
         stage('Build') {
             steps {
-                echo 'Building Docker images...'
+                echo 'Building staging Docker images...'
                 sh 'docker compose build'
             }
         }
 
         stage('Deploy') {
             steps {
-                echo 'Starting Docker containers...'
+                echo 'Starting staging Docker containers...'
                 sh 'docker compose up -d'
             }
         }
 
         stage('Container Status') {
             steps {
-                echo 'Checking container status...'
+                echo 'Checking staging container status...'
                 sh 'docker compose ps'
+                sh 'docker ps'
             }
         }
 
         stage('Health Check') {
             steps {
                 sh '''
-                    echo "Waiting for backend health check..."
+                    echo "Waiting for staging backend health check..."
 
                     for i in $(seq 1 12)
                     do
-                        if curl -f http://127.0.0.1:4000/health
+                        if curl -f http://127.0.0.1:4001/health
                         then
-                            echo "Backend is healthy!"
+                            echo "Staging backend is healthy!"
                             exit 0
                         fi
 
-                        echo "Backend not ready. Waiting 5 seconds..."
+                        echo "Staging backend not ready. Waiting 5 seconds..."
                         sleep 5
                     done
 
-                    echo "Backend health check failed."
+                    echo "Staging backend health check failed."
 
                     docker compose ps
 
@@ -69,16 +74,16 @@ pipeline {
 
     post {
         always {
-            echo 'Pipeline finished.'
+            echo 'Staging pipeline finished.'
             sh 'docker compose ps || true'
         }
 
         failure {
-            echo 'Pipeline failed. Check the console output.'
+            echo 'Staging deployment failed. Check the console output.'
         }
 
         success {
-            echo 'Deployment completed successfully!'
+            echo 'Staging deployment completed successfully!'
         }
     }
 }
