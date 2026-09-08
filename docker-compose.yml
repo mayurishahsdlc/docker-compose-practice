@@ -5,15 +5,15 @@ services:
       context: ./backend
       dockerfile: Dockerfile
 
-    container_name: docker-practice-backend
+    container_name: docker-practice-staging-backend
 
     ports:
-      - "4000:4000"
+      - "4001:4000"
 
     environment:
       PORT: 4000
       MONGO_URL: mongodb://mongo:27017
-      DB_NAME: dockerpractice
+      DB_NAME: dockerpractice_staging
 
     depends_on:
       - mongo
@@ -33,10 +33,10 @@ services:
       context: ./frontend
       dockerfile: Dockerfile
 
-    container_name: docker-practice-frontend
+    container_name: docker-practice-staging-frontend
 
     ports:
-      - "3000:80"
+      - "3001:80"
 
     depends_on:
       - backend
@@ -47,13 +47,13 @@ services:
   mongo:
     image: mongo:7
 
-    container_name: docker-practice-mongo
+    container_name: docker-practice-staging-mongo
 
     volumes:
-      - mongo_data:/data/db
+      - staging_mongo_data:/data/db
 
     restart: unless-stopped
 
 
 volumes:
-  mongo_data:
+  staging_mongo_data:
