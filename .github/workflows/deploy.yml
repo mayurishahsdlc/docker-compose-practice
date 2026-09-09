@@ -1,4 +1,3 @@
-
 name: Deploy Docker Compose App
 
 on:
@@ -13,7 +12,6 @@ jobs:
     steps:
       - name: Deploy to EC2
         uses: appleboy/ssh-action@v1.2.2
-
         with:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USER }}
@@ -26,19 +24,19 @@ jobs:
             echo "Pulling latest code..."
             git pull origin main
 
-            echo "Stopping old containers..."
-            docker-compose down
-
             echo "Building Docker images..."
             docker-compose build
 
             echo "Starting containers..."
             docker-compose up -d
 
-            echo "Waiting for containers..."
+            echo "Waiting for application..."
             sleep 10
 
             echo "Container status:"
             docker-compose ps
+
+            echo "Running health check..."
+            curl -f http://localhost:4000/health
 
             echo "Deployment successful!"
